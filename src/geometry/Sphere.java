@@ -22,6 +22,7 @@ public class Sphere implements GeomObject {
 
 	@Override
 	public Point intersects(Ray ray) {
+		/*
 		// Compute A, B and C coefficients
 		double a = ray.v.dot(ray.v);
 		double b = 2 * ray.v.dot(ray.p.sub(p));
@@ -72,6 +73,24 @@ public class Sphere implements GeomObject {
 		else {
 			return ray.travel(t0);
 		}
+		
+		cp = self.centre - ray.point
+        v = cp.dot(ray.vector)
+        discriminant = (self.radius * self.radius) - (cp.dot(cp) - v*v)
+        if discriminant < 0:
+            return None
+        else:
+            return v - math.sqrt(discriminant)
+       */
+		
+		Vector cp = p.sub(ray.p);
+		double v = cp.dot(ray.v);
+		double discriminant = (r * r) - (cp.dot(cp) - v * v);
+		if (discriminant < 0) {
+			return null;
+		}
+		
+		return ray.travel(v - Math.sqrt(discriminant));
 	}
 
 	@Override

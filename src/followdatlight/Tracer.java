@@ -11,8 +11,8 @@ public class Tracer {
 	World world;
 	Camera camera;
 	Canvas canvas;
-	int recursionLimit = 10;
-	boolean multisampling = true;
+	int recursionLimit = 1;
+	boolean multisampling = false;
 	int xSampleCount = 4;
 	int ySampleCount = 4;
 	
