@@ -4,7 +4,13 @@ public class Vector {
 	double x, y, z;
 	
 	public Vector(Point p1, Point p2) {
-		
+		this(p2.sub(p1));
+	}
+	
+	private Vector(Vector v) {
+		this.x = v.x;
+		this.y = v.y;
+		this.z = v.z;
 	}
 	
 	public Vector(double x, double y, double z) {

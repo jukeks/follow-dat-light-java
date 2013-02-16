@@ -1,6 +1,6 @@
 package geometry;
 
-import java.awt.Color;
+import followdatlight.Color;
 
 
 
@@ -9,6 +9,8 @@ public class Plane implements GeomObject {
 	Color other = new Color(255, 255, 255);
 	Vector n;
 	double k;
+	double reflectivity = 0.5;
+	double transmittivity = 0.1;
 	
 	public Plane(Point p, Vector v) {
         n = v.normalized();
@@ -17,29 +19,17 @@ public class Plane implements GeomObject {
 
 	@Override
 	public Point intersects(Ray ray) {
-/*
-		def _intersect_line3_plane(L, P):
-			d = P.n.dot(L.v)
-		    if not d:
-		        # Parallel
-		        return None
-		    u = (P.k - P.n.dot(L.p)) / d
-		    if not L._u_in(u):
-		        return None
-		    return Point3(L.p.x + u * L.v.x,
-		                  L.p.y + u * L.v.y,
-		                  L.p.z + u * L.v.z)
-*/
-		double d = n.dot(ray.v);
+		double d = ray.v.dot(n);
 		if (d == 0) {
 			return null;
 		}
 		
-		double u = (k - (n.dot(ray.p))) / d;
+		double t = -(ray.p.dot(n) + k) / d;
+		if (t < 0) {
+			return null;
+		}
 		
-	    return new Point(ray.p.x + u * ray.v.x,
-		                ray.p.y + u * ray.v.y,
-		                ray.p.z + u * ray.v.z);	
+	    return ray.travel(t);	
 	}
 
 	@Override
@@ -49,6 +39,21 @@ public class Plane implements GeomObject {
         } else {
         	return other;
         }
+	}
+
+	@Override
+	public Vector normal(Point point) {
+		return n;
+	}
+
+	@Override
+	public float reflectivity() {
+		return (float) reflectivity;
+	}
+
+	@Override
+	public float transmittivity() {
+		return (float) transmittivity;
 	}
 
 }

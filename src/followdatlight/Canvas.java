@@ -1,6 +1,6 @@
 package followdatlight;
 
-import java.awt.Color;
+import followdatlight.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 

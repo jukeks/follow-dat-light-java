@@ -12,7 +12,7 @@ public class Camera {
     self.fov = 50                       # View angle
 	*/
     Vector upVector;
-    double fov = 50;
+    double fov = 20;
     Point position, lookAt;
 	
 	public Camera() {

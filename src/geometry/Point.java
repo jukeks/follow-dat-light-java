@@ -40,4 +40,22 @@ public class Point {
 	public double dot(Point other) {
 		return x * other.x + y * other.y + z * other.z;
 	}
+	
+	
+	public boolean equals(Point other) {
+		if (other == null) {
+			return false;
+		}
+		if (Double.compare(x, other.x) != 0) {
+			return false;
+		}
+		if (Double.compare(y, other.y) != 0) {
+			return false;
+		}
+		if (Double.compare(z, other.z) != 0) {
+			return false;
+		}
+		
+		return true;
+	}
 }

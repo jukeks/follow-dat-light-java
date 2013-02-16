@@ -1,24 +1,31 @@
 package geometry;
 
-import java.awt.Color;
+import followdatlight.Color;
 
 public class Sphere implements GeomObject {
 	private Color color;
 	Point p;
 	double r;
+	double reflectivity = 0.2;
+	double transmittivity = 0.1;
 
 	public Sphere(Point position, double radius) {
 		this.p = position;
 		this.r = radius;
 		color = new Color(255, 0, 0);
 	}
+	
+	public Sphere(Point position, double radius, Color color) {
+		this(position, radius);
+		this.color = color;
+	}
 
 	@Override
 	public Point intersects(Ray ray) {
 		// Compute A, B and C coefficients
 		double a = ray.v.dot(ray.v);
-		double b = 2 * ray.v.dot(ray.p);
-		double c = ray.p.dot(ray.p) - (r * r);
+		double b = 2 * ray.v.dot(ray.p.sub(p));
+		double c = ray.p.sub(p).dot(ray.p.sub(p)) - (r * r);
 
 		// Find discriminant
 		double disc = b * b - 4 * a * c;
@@ -70,5 +77,20 @@ public class Sphere implements GeomObject {
 	@Override
 	public Color colorAt(Point point) {
 		return color;
+	}
+
+	@Override
+	public Vector normal(Point point) {
+		return new Vector(p, point).normalized();
+	}
+
+	@Override
+	public float reflectivity() {
+		return (float) reflectivity;
+	}
+	
+	@Override
+	public float transmittivity() {
+		return (float) transmittivity;
 	}
 }

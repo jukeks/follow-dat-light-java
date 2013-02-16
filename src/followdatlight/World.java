@@ -35,11 +35,15 @@ public class World {
 		objects = new ArrayList<GeomObject>();
 		lights = new ArrayList<Point>();
 		
-		lights.add(new Point(0, 20, 20));
-		//objects.add(new Sphere(new Vector3(-10, -10, 0), 2));
-		objects.add(new Sphere(new Point(0, 0, 0), 10));
-		//objects.add(new Sphere(new Point(-1, 0, 0), 3));
+		lights.add(new Point(20, 20, 20));
+		lights.add(new Point(-20, 20, 20));
+		
+		objects.add(new Sphere(new Point(5, 5, -5), 2, new Color(0, 0, 128)));
+		objects.add(new Sphere(new Point(0, 2, 2), 2));
+		objects.add(new Sphere(new Point(-5, 2, 5), 3, new Color(0, 220, 0)));
+
 		
 		objects.add(new Plane(new Point(0, 0, 0), new Vector(0, 1, 0)));
+		//objects.add(new Plane(new Point(0, -5, 0), new Vector(0, 1, 0)));
 	}
 }

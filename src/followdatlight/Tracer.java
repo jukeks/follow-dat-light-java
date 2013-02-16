@@ -5,13 +5,13 @@ import geometry.Point;
 import geometry.Ray;
 import geometry.Vector;
 
-import java.awt.Color;
+import followdatlight.Color;
 
 public class Tracer {
 	World world;
 	Camera camera;
 	Canvas canvas;
-	int timesHit = 0;
+	int recursionLimit = 10;
 	
 	public Tracer(World world, Camera camera, Canvas canvas) {
 		this.world = world;
@@ -19,36 +19,75 @@ public class Tracer {
 		this.canvas = canvas;
 	}
 	
+	public Tracer(World world, Camera camera, Canvas canvas, int recursionLimit) {
+		this.world = world;
+		this.camera = camera;
+		this.canvas = canvas;
+		this.recursionLimit = recursionLimit;
+	}
+	
 	public void castRays() {
-		/*
-        camera_position = self.camera.position
-        eye_ray = Ray3(self.camera.position, self.camera.look_at)
-        right_vector = eye_ray.v.cross(self.camera.up_vector).normalize()
-        up_vector = right_vector.cross(eye_ray.v).normalize() *-1 # TODO: FIND OUT WHY
-
-        width = self.width
-        height = self.height
-
-        
-        # TODO: calculate this more intelligently
-        pixel_width = 0.02
+		final int processors = Runtime.getRuntime().availableProcessors();
+		Thread[] threads = new Thread[processors];
 		
-        x_comp = right_vector.normalize() * ((x - width/2) * pixel_width)
-        y_comp = up_vector.normalize() * ((y - height/2) * pixel_width)
-
-        cur_vec = eye_ray.v + x_comp + y_comp
-        cur_ray = Ray3(camera_position, cur_vec)
-        self.canvas.save_color(x, y, self.trace(cur_ray))*/
+		for(int i=0; i < processors; i++) {
+			final int id = i;
+			threads[i] = new Thread() {
+				@Override()
+				public void run() {
+					castRays(id, processors);
+				}
+			};
+			
+			threads[i].start();
+		}
+		
+		for (Thread thread : threads) {
+			while (true) {
+				try {
+					thread.join();
+					break;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void castRays(int id, int workerCount) {
+		/*
+		fovRadians = math.pi * (self.fieldOfView / 2.0) / 180.0
+        halfWidth = math.tan(fovRadians)
+        halfHeight = 0.75 * halfWidth
+        width = halfWidth * 2
+        height = halfHeight * 2
+        pixelWidth = width / (canvas.width - 1)
+        pixelHeight = height / (canvas.height - 1) 
+		 
+		 */
+		
+		double fovRadians = Math.PI * camera.fov / 2.0 / 180.0;
+		double halfWidth = Math.tan(fovRadians);
+		double halfHeight = 0.75 * halfWidth;
+		double width = halfWidth * 2;
+		double height = halfHeight * 2;
+		
+		
+		double pixelWidth = width / (canvas.width - 1);
+		double pixelHeight = height / (canvas.height - 1);
+		
+		pixelWidth = 0.02 * 1024.0 / (double)canvas.width;
+		pixelHeight = pixelWidth;
 		
 		Vector eyeVec = camera.lookAt.add(camera.position).scale(-1);
-		Vector rightVec = eyeVec.cross(camera.upVector).normalized();
+		Vector rightVec = camera.upVector.cross(eyeVec).normalized();
 		Vector upVec = rightVec.cross(eyeVec).normalized();
-		double pixelWidth = 0.02;
 		
-		for (int x = 0; x < canvas.width; ++x) {
+		for (int x = id; x < canvas.width; x += workerCount) {
 			for (int y = 0; y < canvas.height; ++y) {
 				Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
-				Vector yComp = upVec.scale((y - canvas.width/2) * pixelWidth);
+				Vector yComp = upVec.scale((y - canvas.width/2) * pixelHeight);
 				
 				Vector currentVec = eyeVec.add(xComp).add(yComp);
 				Ray currentRay = new Ray(camera.position, currentVec);
@@ -59,8 +98,11 @@ public class Tracer {
 
 	}
 	
+	
 	public Intersection intersect(Ray ray) {
-		double minDistance = -1;
+		double minDistance = Double.MAX_VALUE;
+		double distanceLimit = 0.000000000001;
+		
 		GeomObject closestHitObj = null;
 		Point closestHitPoint = null;
 		
@@ -72,7 +114,7 @@ public class Tracer {
 			
 			double distance = ray.p.distance(intersectionPoint);
 			
-			if (distance < minDistance || minDistance == -1) {
+			if (distance < minDistance && distance > distanceLimit) {
 				minDistance = distance;
 				closestHitObj = obj;
 				closestHitPoint = intersectionPoint;
@@ -87,27 +129,52 @@ public class Tracer {
 	}
 	
 	public Color trace(Ray ray) {
+		return trace(ray, 0);
+	}
+	
+	public Color trace(Ray ray, int recursionLevel) {
 		Color black = new Color(0, 0, 0);
+		Color color = black;
 		Intersection is = intersect(ray);
 		if (is == null) {
-			return black;
+			return color;
 		}
 		
 		GeomObject hitObject = is.hitObject;
 		Point hitPoint = is.hitPoint;
 		
-		return hitObject.colorAt(hitPoint);
-		/*
 		for (Point light : world.lights) {
 			Ray lightRay = new Ray(hitPoint, light);
 			
 			is = intersect(lightRay);
 			if (is == null) {
-				return hitObject.colorAt(hitPoint);
+				color = hitObject.colorAt(hitPoint);
+				break;
+			} else {
+                color = is.hitObject.colorAt(is.hitPoint).scale(is.hitObject.transmittivity());
 			}
 		}
 		
-		return black;*/
+		/*
+        # reflection
+        if self.max_recursion_depth > current_recursion_depth:
+            normal = hit_object.normal(is_point)
+            reflected_ray = Ray3(is_point, normal)
+            reflected_color = self.trace(reflected_ray, current_recursion_depth + 1)
+
+            color = self.add_colors(self.calculate_color(reflected_color,
+                hit_object.reflectivity),
+                color)*/
+		
+		
+		if (recursionLevel < recursionLimit) {
+			Vector normal = hitObject.normal(hitPoint);
+			Ray reflection = new Ray(hitPoint, normal);
+			Color reflectedColor = trace(reflection, recursionLevel + 1);
+			color = color.add(reflectedColor.scale(hitObject.reflectivity()));
+		}
+		
+		return color;
 	}
 	
 	private static class Intersection {
