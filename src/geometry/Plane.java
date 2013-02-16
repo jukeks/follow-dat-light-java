@@ -9,7 +9,7 @@ public class Plane implements GeomObject {
 	Color other = new Color(255, 255, 255);
 	Vector n;
 	double k;
-	double reflectivity = 0.5;
+	double reflectivity = 0.1;
 	double transmittivity = 0.1;
 	
 	public Plane(Point p, Vector v) {

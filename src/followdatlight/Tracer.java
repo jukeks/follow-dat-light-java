@@ -12,6 +12,9 @@ public class Tracer {
 	Camera camera;
 	Canvas canvas;
 	int recursionLimit = 10;
+	boolean multisampling = true;
+	int xSampleCount = 4;
+	int ySampleCount = 4;
 	
 	public Tracer(World world, Camera camera, Canvas canvas) {
 		this.world = world;
@@ -84,18 +87,53 @@ public class Tracer {
 		Vector rightVec = camera.upVector.cross(eyeVec).normalized();
 		Vector upVec = rightVec.cross(eyeVec).normalized();
 		
+		Color[] samples = new Color[xSampleCount * ySampleCount];
+		double sampleWidth = pixelWidth / xSampleCount;
+		double sampleHeight = pixelWidth / ySampleCount;
+		
 		for (int x = id; x < canvas.width; x += workerCount) {
 			for (int y = 0; y < canvas.height; ++y) {
-				Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
-				Vector yComp = upVec.scale((y - canvas.width/2) * pixelHeight);
-				
-				Vector currentVec = eyeVec.add(xComp).add(yComp);
-				Ray currentRay = new Ray(camera.position, currentVec);
-				
-				canvas.setPixel(x, y, trace(currentRay));
+				if (multisampling) {
+					int sample = 0;
+
+					for (int sampleX = 0; sampleX < this.xSampleCount; ++sampleX) {
+						for (int sampleY = 0; sampleY < this.ySampleCount; ++sampleY) {
+							Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth + sampleX * sampleWidth - pixelWidth/2);
+							Vector yComp = upVec.scale((y - canvas.width/2) * pixelHeight + sampleY * sampleHeight - pixelHeight/2);
+							
+							Vector currentVec = eyeVec.add(xComp).add(yComp);
+							Ray currentRay = new Ray(camera.position, currentVec);
+							samples[sample++] = trace(currentRay);
+						}
+					}
+					
+					canvas.setPixel(x, y, average(samples));
+					
+				} else {
+					Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
+					Vector yComp = upVec.scale((y - canvas.width/2) * pixelHeight);
+					
+					Vector currentVec = eyeVec.add(xComp).add(yComp);
+					Ray currentRay = new Ray(camera.position, currentVec);
+					
+					canvas.setPixel(x, y, trace(currentRay));
+				}
 			}
 		}
 
+	}
+	
+	private Color average(Color[] samples) {
+		double r = 0, g = 0, b = 0;
+		int len = samples.length;
+		
+		for (int i = 0; i < len; ++i) {
+			r += (double)samples[i].getRed()/len;
+			g += (double)samples[i].getGreen()/len;
+			b += (double)samples[i].getBlue()/len;
+		}
+		
+		return new Color((int)r, (int)g, (int)b);
 	}
 	
 	

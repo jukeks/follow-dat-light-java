@@ -6,7 +6,7 @@ public class Sphere implements GeomObject {
 	private Color color;
 	Point p;
 	double r;
-	double reflectivity = 0.2;
+	double reflectivity = 0.1;
 	double transmittivity = 0.1;
 
 	public Sphere(Point position, double radius) {

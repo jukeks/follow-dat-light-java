@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
     	long start = System.currentTimeMillis();
-    	Canvas c = new Canvas(1024*5, 768*5);
+    	Canvas c = new Canvas(1920, 1080);
     	long canvas = System.currentTimeMillis();
     	printTime("Canvas ", start, canvas);
     	
