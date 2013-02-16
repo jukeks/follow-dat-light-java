@@ -1,11 +1,11 @@
 package followdatlight;
 
+import geometry.GeomObject;
+import geometry.Point;
+import geometry.Ray;
+import geometry.Vector;
+
 import java.awt.Color;
-
-import objects.GeomObject;
-
-import de.yvert.geometry.Ray;
-import de.yvert.geometry.Vector3;
 
 public class Tracer {
 	World world;
@@ -40,26 +40,18 @@ public class Tracer {
         cur_ray = Ray3(camera_position, cur_vec)
         self.canvas.save_color(x, y, self.trace(cur_ray))*/
 		
-		Vector3 eyeVec = camera.position.add(camera.lookAt);
-		Vector3 rightVec = eyeVec.cross(camera.upVector).normalize();
-		Vector3 upVec = rightVec.cross(eyeVec).normalize();
+		Vector eyeVec = camera.lookAt.add(camera.position).scale(-1);
+		Vector rightVec = eyeVec.cross(camera.upVector).normalized();
+		Vector upVec = rightVec.cross(eyeVec).normalized();
 		double pixelWidth = 0.02;
-		
-		Ray currentRay = new Ray();
-		currentRay.p = camera.position;
 		
 		for (int x = 0; x < canvas.width; ++x) {
 			for (int y = 0; y < canvas.height; ++y) {
-				Vector3 xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
-				Vector3 yComp = upVec.scale((y - canvas.width/2) * pixelWidth);
+				Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
+				Vector yComp = upVec.scale((y - canvas.width/2) * pixelWidth);
 				
-				Vector3 currentVec = eyeVec.add(xComp).add(yComp);
-				
-				//System.out.println(currentVec + " " + currentVec.distance(new Vector3(0, 0, 0)));
-				
-
-				currentRay.v = currentVec;
-				currentRay.update();
+				Vector currentVec = eyeVec.add(xComp).add(yComp);
+				Ray currentRay = new Ray(camera.position, currentVec);
 				
 				canvas.setPixel(x, y, trace(currentRay));
 			}
@@ -70,10 +62,10 @@ public class Tracer {
 	public Intersection intersect(Ray ray) {
 		double minDistance = -1;
 		GeomObject closestHitObj = null;
-		Vector3 closestHitPoint = null;
+		Point closestHitPoint = null;
 		
 		for (GeomObject obj : world.objects) {
-			Vector3 intersectionPoint = obj.intersects(ray);
+			Point intersectionPoint = obj.intersects(ray);
 			if (intersectionPoint == null) {
 				continue;
 			}
@@ -85,8 +77,6 @@ public class Tracer {
 				closestHitObj = obj;
 				closestHitPoint = intersectionPoint;
 			}
-			
-			
 		}
 		
 		if (closestHitObj != null) {
@@ -104,30 +94,27 @@ public class Tracer {
 		}
 		
 		GeomObject hitObject = is.hitObject;
+		Point hitPoint = is.hitPoint;
+		
+		return hitObject.colorAt(hitPoint);
 		/*
-		Ray lightRay = new Ray();
-		lightRay.p = is.hitPoint;
-		for (Vector3 light : world.lights) {
-			lightRay.v = light.add(lightRay.p.scale(-1));
-			lightRay.update();
+		for (Point light : world.lights) {
+			Ray lightRay = new Ray(hitPoint, light);
 			
-			is = intersect(ray);
+			is = intersect(lightRay);
 			if (is == null) {
-				return hitObject.colorAt(lightRay.p);
+				return hitObject.colorAt(hitPoint);
 			}
-			
-			return new Color(0, 128, 0);
 		}
 		
 		return black;*/
-		return hitObject.colorAt(is.hitPoint);
 	}
 	
 	private static class Intersection {
 		GeomObject hitObject;
-		Vector3 hitPoint;
+		Point hitPoint;
 		
-		public Intersection(GeomObject obj, Vector3 p) {
+		public Intersection(GeomObject obj, Point p) {
 			hitObject = obj;
 			hitPoint = p;
 		}

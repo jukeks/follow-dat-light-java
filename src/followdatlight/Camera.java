@@ -1,6 +1,8 @@
 package followdatlight;
 
-import de.yvert.geometry.Vector3;
+import geometry.Point;
+import geometry.Vector;
+
 
 public class Camera {
 	/*
@@ -9,13 +11,14 @@ public class Camera {
     self.up_vector = Vector3(0, 1, 0)   # Camera's up vector
     self.fov = 50                       # View angle
 	*/
-    Vector3 position, lookAt, upVector;
+    Vector upVector;
     double fov = 50;
+    Point position, lookAt;
 	
 	public Camera() {
-		this.position = new Vector3(0, 20, 20);
-		this.lookAt = new Vector3(0, 0, 0);
-		this.upVector = new Vector3(0, 1, 0);
+		this.position = new Point(0, 5, 20);
+		this.lookAt = new Point(0, 0, 0);
+		this.upVector = new Vector(0, 1, 0);
 	}
 	
 }

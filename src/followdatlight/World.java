@@ -1,12 +1,13 @@
 package followdatlight;
 
+import geometry.GeomObject;
+import geometry.Point;
+import geometry.Sphere;
+import geometry.Plane;
+import geometry.Vector;
+
 import java.util.ArrayList;
 
-import de.yvert.geometry.Vector3;
-
-import objects.GeomObject;
-import objects.Sphere;
-import objects.Surface;
 
 public class World {
 	/*
@@ -28,17 +29,17 @@ public class World {
    */
 	
 	ArrayList<GeomObject> objects;
-	ArrayList<Vector3> lights;
+	ArrayList<Point> lights;
 	
 	public World() {
 		objects = new ArrayList<GeomObject>();
-		lights = new ArrayList<Vector3>();
+		lights = new ArrayList<Point>();
 		
-		lights.add(new Vector3(20, 20, 20));
+		lights.add(new Point(0, 20, 20));
 		//objects.add(new Sphere(new Vector3(-10, -10, 0), 2));
-		objects.add(new Sphere(new Vector3(1, 1, 0), 2));
-		objects.add(new Sphere(new Vector3(-1, 0, 0), 2));
+		objects.add(new Sphere(new Point(0, 0, 0), 10));
+		//objects.add(new Sphere(new Point(-1, 0, 0), 3));
 		
-		//objects.add(new Surface());
+		objects.add(new Plane(new Point(0, 0, 0), new Vector(0, 1, 0)));
 	}
 }
