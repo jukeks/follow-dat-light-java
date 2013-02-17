@@ -4,9 +4,12 @@ import java.io.FileNotFoundException;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
-    	for (int i = 10; i < 100; ++i) {
+    	/*
+    	for (int i = 20; i < 40; ++i) {
     		trace(1920, 1080, "trace_" + i + ".png");
-    	}
+    	}*/
+    	
+    	trace(1920, 1080, "trace.png");
     }
 
     public static void trace(int width, int height, String filename) throws FileNotFoundException {

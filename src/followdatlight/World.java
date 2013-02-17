@@ -1,5 +1,6 @@
 package followdatlight;
 
+import geometry.Cube;
 import geometry.GeomObject;
 import geometry.Point;
 import geometry.Sphere;
@@ -44,9 +45,12 @@ public class World {
 		objects.add(new Sphere(new Point(-5, 2, 5), 3, new Color(0, 220, 0)));
 		*/
 		
-		for (int i = 0; i < 10; ++i) {
+		/*
+		for (int i = 0; i < 25; ++i) {
 			objects.add(randomSphere());
-		}
+		}*/
+		
+		objects.add(new Cube(new Point(0, 0, 0), 2));
 		
 		objects.add(new Plane(new Point(0, 0, 0), new Vector(0, 1, 0)));
 		//objects.add(new Plane(new Point(0, -5, 0), new Vector(0, 1, 0)));
@@ -55,7 +59,7 @@ public class World {
 	private Point randomPoint() {
 		return new Point(Math.random() * 25 - 12,
 				Math.random() * 12,
-				Math.random() * -25);
+				Math.random() * 50 - 25);
 	}
 	
 	private Sphere randomSphere() {

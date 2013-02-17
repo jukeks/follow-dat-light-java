@@ -12,9 +12,21 @@ public class Plane implements GeomObject {
 	double reflectivity = 0.05;
 	double transmittivity = 0.1;
 	
+	
 	public Plane(Point p, Vector v) {
         n = v.normalized();
         k = n.dot(p);
+	}
+	
+	public Plane(Point p1, Point p2, Point p3) {
+		/*
+        self.n = (args[1] - args[0]).cross(args[2] - args[0]);
+        self.n.normalize()
+        self.k = self.n.dot(args[0])
+        */
+        
+        n = p1.sub(p2).cross(p3).sub(p1).normalized();
+        k = n.dot(p1);
 	}
 
 	@Override

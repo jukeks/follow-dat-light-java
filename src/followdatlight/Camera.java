@@ -16,7 +16,7 @@ public class Camera {
     Point position, lookAt;
 	
 	public Camera() {
-		this.position = new Point(-5, 5, 20);
+		this.position = new Point(5, 5, 20);
 		this.lookAt = new Point(0, 0, 0);
 		this.upVector = new Vector(0, 1, 0);
 	}

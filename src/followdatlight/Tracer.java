@@ -14,9 +14,9 @@ public class Tracer {
 	Camera camera;
 	Canvas canvas;
 	int recursionLimit = 3;
-	boolean multisampling = true;
+	boolean multisampling = false;
 	int xSampleCount = 4;
-	int ySampleCount = 64;
+	int ySampleCount = 4;
 	
 	private static final double EPSILON = 0.0001;
 	
@@ -216,10 +216,7 @@ public class Tracer {
 		
 		GeomObject hitObject = is.object;
 		Point hitPoint = is.point;
-		/*
-		if (true)
-			return is.hitObject.colorAt(hitPoint);
-		*/
+
 		for (Point light : world.lights) {
 			Ray lightRay = new Ray(hitPoint, light);
 			Intersection blocked = intersect(lightRay);
@@ -233,6 +230,7 @@ public class Tracer {
 		
 		if (recursionLevel < recursionLimit) {
 			Vector normal = hitObject.normal(hitPoint);
+
 			Ray reflection = new Ray(hitPoint, ray.v.reflect(normal));
 			Color reflectedColor = trace(reflection, recursionLevel + 1);
 			color = color.add(reflectedColor.scale(hitObject.reflectivity()));
