@@ -57,7 +57,6 @@ public class Color extends java.awt.Color {
 	}
 
 	public static Color HSL2RGB(double h, double s, double l) {
-
 		double v;
 		double r, g, b;
 		r = l; // default to gray

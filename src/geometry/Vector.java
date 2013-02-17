@@ -19,6 +19,15 @@ public class Vector {
 		this.z = z;
 	}
 	
+	public Vector reflect(Vector normal) {
+		normal = normal.normalized();
+        double d = 2 * (x * normal.x + y * normal.y + z * z);
+        return new Vector(x + d * normal.x,
+                       		y + d * normal.y,
+                       		z + d * normal.z);
+
+	}
+	
 	public double magnitude() {
 		return Math.sqrt(dot(this));
 	}

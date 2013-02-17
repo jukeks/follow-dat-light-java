@@ -9,7 +9,7 @@ public class Plane implements GeomObject {
 	Color other = new Color(255, 255, 255);
 	Vector n;
 	double k;
-	double reflectivity = 0.1;
+	double reflectivity = 0.05;
 	double transmittivity = 0.1;
 	
 	public Plane(Point p, Vector v) {
@@ -18,7 +18,7 @@ public class Plane implements GeomObject {
 	}
 
 	@Override
-	public Point intersects(Ray ray) {
+	public Double intersects(Ray ray) {
 		double d = ray.v.dot(n);
 		if (d == 0) {
 			return null;
@@ -29,7 +29,7 @@ public class Plane implements GeomObject {
 			return null;
 		}
 		
-	    return ray.travel(t);	
+	    return t;	
 	}
 
 	@Override

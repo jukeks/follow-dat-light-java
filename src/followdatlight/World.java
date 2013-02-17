@@ -7,6 +7,7 @@ import geometry.Plane;
 import geometry.Vector;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class World {
@@ -35,15 +36,35 @@ public class World {
 		objects = new ArrayList<GeomObject>();
 		lights = new ArrayList<Point>();
 		
-		lights.add(new Point(20, 20, 20));
+		//lights.add(new Point(0, 20, 0));
 		lights.add(new Point(-20, 20, 20));
-		
-		objects.add(new Sphere(new Point(5, 5, -5), 2, new Color(0, 0, 128)));
+		/*
+		objects.add(new Sphere(new Point(9, 5, -8), 2.2, new Color(0, 0, 220)));
 		objects.add(new Sphere(new Point(0, 2, 2), 2));
 		objects.add(new Sphere(new Point(-5, 2, 5), 3, new Color(0, 220, 0)));
-
+		*/
+		
+		for (int i = 0; i < 10; ++i) {
+			objects.add(randomSphere());
+		}
 		
 		objects.add(new Plane(new Point(0, 0, 0), new Vector(0, 1, 0)));
 		//objects.add(new Plane(new Point(0, -5, 0), new Vector(0, 1, 0)));
+	}
+	
+	private Point randomPoint() {
+		return new Point(Math.random() * 25 - 12,
+				Math.random() * 12,
+				Math.random() * -25);
+	}
+	
+	private Sphere randomSphere() {
+		return new Sphere(randomPoint(), Math.random() * 3, randomColor(20, 220));
+	}
+	
+	private Color randomColor(int l, int h) {
+		return new Color((int)(Math.random() * (h - l) + l),
+				(int)(Math.random() * (h - l) + l),
+				(int)(Math.random() * (h - l) + l));		
 	}
 }

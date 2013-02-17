@@ -4,13 +4,19 @@ import java.io.FileNotFoundException;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
+    	for (int i = 10; i < 100; ++i) {
+    		trace(1920, 1080, "trace_" + i + ".png");
+    	}
+    }
+
+    public static void trace(int width, int height, String filename) throws FileNotFoundException {
     	long start = System.currentTimeMillis();
-    	Canvas c = new Canvas(1920, 1080);
+    	Canvas c = new Canvas(width, height, filename);
     	long canvas = System.currentTimeMillis();
     	printTime("Canvas ", start, canvas);
     	
     	start = System.currentTimeMillis();
-    	Tracer t = new Tracer(new World(), new Camera(), c, 10);
+    	Tracer t = new Tracer(new World(), new Camera(), c, 3);
     	long tracer = System.currentTimeMillis();
     	printTime("Tracer ", start, tracer);
     	

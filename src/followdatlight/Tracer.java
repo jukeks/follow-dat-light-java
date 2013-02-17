@@ -1,5 +1,7 @@
 package followdatlight;
 
+import java.util.ArrayList;
+
 import geometry.GeomObject;
 import geometry.Point;
 import geometry.Ray;
@@ -11,10 +13,12 @@ public class Tracer {
 	World world;
 	Camera camera;
 	Canvas canvas;
-	int recursionLimit = 1;
-	boolean multisampling = false;
+	int recursionLimit = 3;
+	boolean multisampling = true;
 	int xSampleCount = 4;
-	int ySampleCount = 4;
+	int ySampleCount = 64;
+	
+	private static final double EPSILON = 0.0001;
 	
 	public Tracer(World world, Camera camera, Canvas canvas) {
 		this.world = world;
@@ -32,6 +36,8 @@ public class Tracer {
 	public void castRays() {
 		final int processors = Runtime.getRuntime().availableProcessors();
 		Thread[] threads = new Thread[processors];
+		
+		System.out.println("Using " + processors + " threads.");
 		
 		for(int i=0; i < processors; i++) {
 			final int id = i;
@@ -139,23 +145,20 @@ public class Tracer {
 	
 	public Intersection intersect(Ray ray) {
 		double minDistance = Double.MAX_VALUE;
-		double distanceLimit = 0.000000000001;
 		
 		GeomObject closestHitObj = null;
 		Point closestHitPoint = null;
 		
 		for (GeomObject obj : world.objects) {
-			Point intersectionPoint = obj.intersects(ray);
-			if (intersectionPoint == null) {
+			Double distance = obj.intersects(ray);
+			if (distance == null) {
 				continue;
 			}
 			
-			double distance = ray.p.distance(intersectionPoint);
-			
-			if (distance < minDistance && distance > distanceLimit) {
+			if (distance < minDistance && distance > EPSILON) {
 				minDistance = distance;
 				closestHitObj = obj;
-				closestHitPoint = intersectionPoint;
+				closestHitPoint = ray.travel(distance);
 			}
 		}
 		
@@ -164,6 +167,39 @@ public class Tracer {
 		}
 		
 		return null;
+	}
+	
+	private boolean blocked(Ray ray) {
+		for (GeomObject obj : world.objects) {
+			Double time = obj.intersects(ray);
+			
+			if (time != null && time > EPSILON) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private Point[] visibleLights(Point p) {
+		ArrayList<Point> visibleLights = new ArrayList<Point>();
+		for (Point light : world.lights) {
+			if (lightIsVisible(p, light)) {
+				visibleLights.add(light);
+			}
+		}
+		
+		return visibleLights.toArray(new Point[0]);
+	}
+	
+	private boolean lightIsVisible(Point p, Point light) {
+		Ray r = new Ray(p, light);
+
+		if (blocked(r)) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public Color trace(Ray ray) {
@@ -178,36 +214,26 @@ public class Tracer {
 			return color;
 		}
 		
-		GeomObject hitObject = is.hitObject;
-		Point hitPoint = is.hitPoint;
-		
+		GeomObject hitObject = is.object;
+		Point hitPoint = is.point;
+		/*
+		if (true)
+			return is.hitObject.colorAt(hitPoint);
+		*/
 		for (Point light : world.lights) {
 			Ray lightRay = new Ray(hitPoint, light);
-			
-			is = intersect(lightRay);
-			if (is == null) {
+			Intersection blocked = intersect(lightRay);
+			if (blocked == null) {
 				color = hitObject.colorAt(hitPoint);
 				break;
 			} else {
-                color = is.hitObject.colorAt(is.hitPoint).scale(is.hitObject.transmittivity());
+                color = hitObject.colorAt(hitPoint).scale(blocked.object.transmittivity());
 			}
 		}
 		
-		/*
-        # reflection
-        if self.max_recursion_depth > current_recursion_depth:
-            normal = hit_object.normal(is_point)
-            reflected_ray = Ray3(is_point, normal)
-            reflected_color = self.trace(reflected_ray, current_recursion_depth + 1)
-
-            color = self.add_colors(self.calculate_color(reflected_color,
-                hit_object.reflectivity),
-                color)*/
-		
-		
 		if (recursionLevel < recursionLimit) {
 			Vector normal = hitObject.normal(hitPoint);
-			Ray reflection = new Ray(hitPoint, normal);
+			Ray reflection = new Ray(hitPoint, ray.v.reflect(normal));
 			Color reflectedColor = trace(reflection, recursionLevel + 1);
 			color = color.add(reflectedColor.scale(hitObject.reflectivity()));
 		}
@@ -216,12 +242,12 @@ public class Tracer {
 	}
 	
 	private static class Intersection {
-		GeomObject hitObject;
-		Point hitPoint;
+		GeomObject object;
+		Point point;
 		
 		public Intersection(GeomObject obj, Point p) {
-			hitObject = obj;
-			hitPoint = p;
+			object = obj;
+			point = p;
 		}
 	}
 }

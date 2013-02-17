@@ -16,6 +16,11 @@ public class Canvas {
 	ImageLine[] lines;
 	PngWriter png;
 	
+	public Canvas(int width, int height, String filename) {
+		this(width, height);
+		this.filename = filename;
+	}
+	
 	public Canvas(int width, int height) {
 		this.width = width;
 		this.height = height;

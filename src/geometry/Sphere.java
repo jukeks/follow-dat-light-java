@@ -12,7 +12,7 @@ public class Sphere implements GeomObject {
 	public Sphere(Point position, double radius) {
 		this.p = position;
 		this.r = radius;
-		color = new Color(255, 0, 0);
+		color = new Color(220, 0, 0);
 	}
 	
 	public Sphere(Point position, double radius, Color color) {
@@ -21,77 +21,40 @@ public class Sphere implements GeomObject {
 	}
 
 	@Override
-	public Point intersects(Ray ray) {
-		/*
-		// Compute A, B and C coefficients
+	public Double intersects(Ray ray) {
+		Vector l = ray.p.sub(p);
 		double a = ray.v.dot(ray.v);
-		double b = 2 * ray.v.dot(ray.p.sub(p));
-		double c = ray.p.sub(p).dot(ray.p.sub(p)) - (r * r);
-
-		// Find discriminant
-		double disc = b * b - 4 * a * c;
-
-		// if discriminant is negative there are no real roots, so return
-		// false as ray misses sphere
+		double b = 2 * ray.v.dot(l);
+		double c = l.dot(l) - (r * r);
+		
+		double disc = b*b - 4*a*c;
 		if (disc < 0) {
 			return null;
 		}
 		
-		// compute q as described above
-		double distSqrt = Math.sqrt(disc);
-		double q;
-		if (b < 0) {
-			q = (-b - distSqrt) / 2.0;
-		} else {
-			q = (-b + distSqrt) / 2.0;
+		
+		double squared_disc = Math.sqrt(disc);
+		double t1 = (-b + squared_disc)/(2*a);
+		double t2 = (-b - squared_disc)/(2*a);
+		
+		// returning the nearest point
+		if (t2 < t1) {
+			double tmp = t1;
+			t1 = t2;
+			t2 = tmp;
 		}
-		// compute t0 and t1
-		double t0 = q / a;
-		double t1 = c / q;
-
-		// make sure t0 is smaller than t1
-		if (t0 > t1) {
-			// if t0 is bigger than t1 swap them around
-			double temp = t0;
-			t0 = t1;
-			t1 = temp;
+		
+		if (t2 < 0) {
+			return null;
 		}
-
-		// if t1 is less than zero, the object is in the ray's negative
-		// direction
-		// and consequently the ray misses the sphere
+		
 		if (t1 < 0) {
-			return null;
-		}
-
-		// if t0 is less than zero, the intersection point is at t1
-		if (t0 < 0) {
-			return ray.travel(t1);
-		}
-
-		// else the intersection point is at t0
-		else {
-			return ray.travel(t0);
+			return t2;
 		}
 		
-		cp = self.centre - ray.point
-        v = cp.dot(ray.vector)
-        discriminant = (self.radius * self.radius) - (cp.dot(cp) - v*v)
-        if discriminant < 0:
-            return None
-        else:
-            return v - math.sqrt(discriminant)
-       */
-		
-		Vector cp = p.sub(ray.p);
-		double v = cp.dot(ray.v);
-		double discriminant = (r * r) - (cp.dot(cp) - v * v);
-		if (discriminant < 0) {
-			return null;
-		}
-		
-		return ray.travel(v - Math.sqrt(discriminant));
+		return t1;
 	}
+
 
 	@Override
 	public Color colorAt(Point point) {
@@ -112,4 +75,7 @@ public class Sphere implements GeomObject {
 	public float transmittivity() {
 		return (float) transmittivity;
 	}
+	
+	
+	
 }
