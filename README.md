@@ -1,5 +1,7 @@
-follow-dat-light-java
+Follow Dat Light
 =====================
+
+![Spheres](https://dl.dropboxusercontent.com/u/31013819/spheres.jpg)
 
 ## Depencies
 Project uses PNGJ (http://code.google.com/p/pngj/) which is released 
