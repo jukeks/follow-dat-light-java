@@ -1,29 +1,33 @@
 package followdatlight;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import geometry.GeomObject;
 import geometry.Point;
 import geometry.Ray;
 import geometry.Vector;
 
+import followdatlight.Camera.FieldOfView;
 import followdatlight.Color;
 
 public class Tracer {
 	World world;
 	Camera camera;
 	Canvas canvas;
-	int recursionLimit = 3;
-	boolean multisampling = false;
+	int recursionLimit;
+	boolean multisampling = true;
 	int xSampleCount = 4;
 	int ySampleCount = 4;
 	
+	boolean depthOfField = false;
+	
 	private static final double EPSILON = 0.0001;
 	
+	private Random random;
+	
 	public Tracer(World world, Camera camera, Canvas canvas) {
-		this.world = world;
-		this.camera = camera;
-		this.canvas = canvas;
+		this(world, camera, canvas, 3);
 	}
 	
 	public Tracer(World world, Camera camera, Canvas canvas, int recursionLimit) {
@@ -31,10 +35,12 @@ public class Tracer {
 		this.camera = camera;
 		this.canvas = canvas;
 		this.recursionLimit = recursionLimit;
+		
+		random = new Random();
 	}
 	
 	public void castRays() {
-		final int processors = Runtime.getRuntime().availableProcessors();
+		final int processors = 4; //Runtime.getRuntime().availableProcessors();
 		Thread[] threads = new Thread[processors];
 		
 		System.out.println("Using " + processors + " threads.");
@@ -64,6 +70,10 @@ public class Tracer {
 		}
 	}
 	
+	private double random() {
+		return (random.nextDouble() - 0.5) * 0.05;
+	}
+	
 	private void castRays(int id, int workerCount) {
 		/*
 		fovRadians = math.pi * (self.fieldOfView / 2.0) / 180.0
@@ -76,18 +86,22 @@ public class Tracer {
 		 
 		 */
 		
-		double fovRadians = Math.PI * camera.fov / 2.0 / 180.0;
-		double halfWidth = Math.tan(fovRadians);
-		double halfHeight = 0.75 * halfWidth;
+        double fovRadians = Math.PI * (45 / 2.0) / 180.0;
+        double halfWidth = Math.tan(fovRadians);
+        double halfHeight = (double)canvas.height/canvas.width * halfWidth;
 		double width = halfWidth * 2;
 		double height = halfHeight * 2;
-		
 		
 		double pixelWidth = width / (canvas.width - 1);
 		double pixelHeight = height / (canvas.height - 1);
 		
-		pixelWidth = 0.02 * 1024.0 / (double)canvas.width;
-		pixelHeight = pixelWidth;
+		System.out.println("" + pixelWidth + "x" + pixelHeight);
+		
+		//pixelWidth = 0.02 * 1024.0 / (double)canvas.width;
+		//pixelHeight = pixelWidth;
+		
+		pixelWidth = 0.5;
+		pixelHeight = 0.5;
 		
 		Vector eyeVec = camera.lookAt.add(camera.position).scale(-1);
 		Vector rightVec = camera.upVector.cross(eyeVec).normalized();
@@ -115,9 +129,48 @@ public class Tracer {
 					
 					canvas.setPixel(x, y, average(samples));
 					
-				} else {
+				} else if (depthOfField) {
+					
+				/*
+					  pixelCenterCordinate = L + (pixelWidth) * (j) * u + (pixelHeight) * (i) * v; 
+					  // L is leftmost corner of image plane that we derived in image plane setup
+					  rayDirection = pixelCenterCordinate - rayStart;
+					  SbVec3f pointAimed = camera.getCameraPosition() + 15 * rayDirection;
+					  //pointAimed is the position of pixel on focal plane in specified ray direction and 15 is my focal length (you can change accordingly)
+					  rayDirection.normalize();
+					  float r = 1;
+					  for (int di =0; di < 25; di++){ // shooting 25 random rays
+					    float du = rand()/float(RAND_MAX+1);//generating random number
+					    float dv = rand()/float(RAND_MAX+1);
+
+					    // creating new camera position(or ray start using jittering)
+					    SbVec3f start=camera.getCameraPosition()-(r/2)*u-(r/2)*v+r*(du)*u+r*(dv)*v; 
+					    
+					    //getting the new direction of ray
+					    SbVec3f direction = pointAimed - start;*/
+					
+					
+					
 					Vector xComp = rightVec.scale((x - canvas.width/2) * pixelWidth);
 					Vector yComp = upVec.scale((y - canvas.width/2) * pixelHeight);
+					
+					Color[] dofsamples = new Color[16];
+					for (int i = 0; i < dofsamples.length; ++i) {
+						Vector dx = rightVec.scale(random());
+						Vector dy = upVec.scale(random());
+						Point origin = camera.position.add(dx).add(dy);
+						Vector pointAimed = camera.lookAt.add(origin).scale(-1);
+						Vector currentVec = pointAimed.add(xComp).add(yComp);
+						Ray currentRay = new Ray(camera.position, currentVec);
+						dofsamples[i] = trace(currentRay);
+					}
+					
+					canvas.setPixel(x, y, average(dofsamples));
+					
+				} else {
+					//System.out.println(x * pixelWidth - canvas.width/2);
+					Vector xComp = rightVec.scale(x * pixelWidth - canvas.width/2);
+					Vector yComp = upVec.scale(y * pixelHeight - canvas.height/2);
 					
 					Vector currentVec = eyeVec.add(xComp).add(yComp);
 					Ray currentRay = new Ray(camera.position, currentVec);

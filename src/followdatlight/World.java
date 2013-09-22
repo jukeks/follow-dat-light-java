@@ -39,18 +39,21 @@ public class World {
 		
 		//lights.add(new Point(0, 20, 0));
 		lights.add(new Point(-20, 20, 20));
+		
 		/*
 		objects.add(new Sphere(new Point(9, 5, -8), 2.2, new Color(0, 0, 220)));
 		objects.add(new Sphere(new Point(0, 2, 2), 2));
 		objects.add(new Sphere(new Point(-5, 2, 5), 3, new Color(0, 220, 0)));
 		*/
 		
+		objects.add(new Sphere(new Point(0, 0, 0), 2));
 		/*
+		
 		for (int i = 0; i < 25; ++i) {
 			objects.add(randomSphere());
 		}*/
 		
-		objects.add(new Cube(new Point(0, 0, 0), 2));
+		//objects.add(new Cube(new Point(0, 0, 0), 2));
 		
 		objects.add(new Plane(new Point(0, 0, 0), new Vector(0, 1, 0)));
 		//objects.add(new Plane(new Point(0, -5, 0), new Vector(0, 1, 0)));

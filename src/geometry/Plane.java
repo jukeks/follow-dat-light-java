@@ -41,6 +41,8 @@ public class Plane implements GeomObject {
 			return null;
 		}
 		
+		//System.out.println("HIT plane");
+		
 	    return t;	
 	}
 
